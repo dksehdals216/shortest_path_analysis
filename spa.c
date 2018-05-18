@@ -4,14 +4,15 @@
 #include <math.h>
 #include <string.h>
 
-void replace_str(char *inp_str, char *out_str);
 
-static const char INF[] = "INF";
+char *replace_str(char *inp_str, char *target, char *new);
+
 
 int main(int argc, char* argv[])
 {
 	FILE * fp;
 	char *buffer;
+    char *replc_str = NULL;
 	int f_size = 0;
 	int counter = 0;
 	int c;
@@ -54,21 +55,56 @@ int main(int argc, char* argv[])
     }
 
 
+    char ch[] = "INF";
+    char t[] = "-1";
+
+    replc_str = replace_str(buffer, ch, t);
+    printf("%s\n", replc_str);
+
 	counter = sqrt(counter);
  	
  	char name[counter];
- 	for(n = 0; n < counter; n++)
- 	{
- 		//printf("%d\n", buffer[n]);
- 	}
+    printf("\n%d\n", counter);
 
  	free(buffer);
+    free(replc_str);
 }
 
-void replace_str(char *inp_str, char *	out_str)
+char *replace_str(char *inp_str, char *target, char *new)
 {
 	int i = 0;
 	int cnt = 0;
-	int inp_len = strlen(inp_str);
-	int out_len = strlen(out_str);
+	int tok_rep = strlen(new);
+	int tok_len = strlen(target);
+    char *out_str;
+    
+    for(i = 0; inp_str[i] != '\0'; i++)
+    {
+        if(strstr(&inp_str[i], target) == &inp_str[i])
+        {
+            cnt++;
+            i+= tok_len - 1;
+        }
+    }
+
+    out_str = (char *)malloc(i + cnt * (tok_rep - tok_len));
+
+    i = 0;
+    while(*inp_str)
+    {
+        if(strstr(inp_str, target) == inp_str)
+        {
+            strcpy(&out_str[i], new);
+            i += tok_rep;
+            inp_str += tok_len;
+        }
+        else
+        {
+            out_str[i++] = *inp_str++;
+        }
+    }
+    out_str[i] = '\0';
+    return out_str;
+
 }
+
