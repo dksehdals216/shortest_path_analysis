@@ -69,6 +69,9 @@ void replace_str(char *inp_str, char *	out_str)
 {
 	int i = 0;
 	int cnt = 0;
+
 	int inp_len = strlen(inp_str);
 	int out_len = strlen(out_str);
+
+	for(i = 0; i < )
 }
