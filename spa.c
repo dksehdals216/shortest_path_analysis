@@ -5,6 +5,8 @@
 #include <string.h>
 
 
+#define MAX_STR_LEN 256
+
 char *replace_str(char *inp_str, char *target, char *new);
 
 
@@ -57,14 +59,49 @@ int main(int argc, char* argv[])
 
     char ch[] = "INF";
     char t[] = "-1";
+	counter = sqrt(counter);
 
     replc_str = replace_str(buffer, ch, t);
-    printf("%s\n", replc_str);
+    printf("\n%s\n", replc_str);
 
-	counter = sqrt(counter);
- 	
- 	char name[counter];
-    printf("\n%d\n", counter);
+    char name[counter][MAX_STR_LEN];
+    for(n = 0; n < counter; n++)
+    {
+        memset(name[n], '\0', sizeof(name[n]));
+    }
+
+    n = 0;
+    while(1)
+    { 
+        if(isdigit(buffer[n]))
+        {
+           buffer[n] = '\0'; 
+           break;
+        }
+        n++;       
+    }
+    printf("%s\n\n", buffer);
+
+    c = 0;
+    int k = 0;
+    for(n = 1; n < strlen(buffer); n++)
+    {
+        if(isupper(buffer[n]))
+        {
+            strncpy(name[c], buffer + k, n - k);
+            k = n;
+            c++;
+        }
+    }
+    for(n = 0; n < counter; n++)
+    {
+
+        printf("%s\n", name[n]);
+    }
+
+    for(n = 0; n < counter; n++)
+    {
+    }
 
  	free(buffer);
     free(replc_str);
