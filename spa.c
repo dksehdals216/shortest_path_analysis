@@ -1,3 +1,11 @@
+/**
+ * Dijkstra, Bellman-Ford, Floyd's Algorithm implementation against test case
+ * data.
+ * 21600397@handong.edu adominic022@gmail.com
+ *
+ */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -7,7 +15,16 @@
 
 #define MAX_STR_LEN 256
 
+typedef struct Node
+{
+    int name_index;
+    int weight;
+    struct Node *next;
+}Node;
+
+void append_node(Node** hd_ptr, char in_index);
 char *replace_str(char *inp_str, char *target, char *new);
+void freeLL(Node *hd_ptr);
 
 
 int main(int argc, char* argv[])
@@ -93,14 +110,19 @@ int main(int argc, char* argv[])
             c++;
         }
     }
+
+    Node *llist_arr[counter];
+
     for(n = 0; n < counter; n++)
     {
+       llist_arr[n] = (Node*)malloc(sizeof(Node));
 
-        printf("%s\n", name[n]);
+       llist_arr[n]->name_index = n;
     }
 
     for(n = 0; n < counter; n++)
     {
+        freeLL(llist_arr[n]);
     }
 
  	free(buffer);
@@ -143,6 +165,38 @@ char *replace_str(char *inp_str, char *target, char *new)
     out_str[i] = '\0';
     return out_str;
 
->>>>>>> 9fc2b747716ee73bcfc4a0af550628fb1cf00657
 }
 
+void freeLL(Node *hd_ptr)
+{
+    Node* tmp;
+    while(hd_ptr != NULL)
+    {
+        tmp = hd_ptr;
+        hd_ptr = hd_ptr->next;
+        free(tmp);
+    }
+}
+
+void append_node(Node** hd_ptr, char in_index)
+{
+    Node* new = (Node*)malloc(sizeof(Node));
+    Node* last = *hd_ptr;
+
+    new->name_index = in_index;
+    new->next = NULL;
+
+    if(*hd_ptr == NULL)
+    {
+        *hd_ptr = new;
+        return;
+    }
+    else
+    {
+        while(last->next != NULL)
+        {
+            last = last->next;
+        }
+    }
+    last->next = new;
+}
