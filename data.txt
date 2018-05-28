@@ -1,4 +1,4 @@
-		Busan	Daegu	Daejeon	Gangeung	Gwangju	Jeonju	Jinju	Pohang	Seoul Wonju
+		Busan	Daegu	Daejeon	Gangeung	Gwangju	Jeonju	Jinju	Pohang	Seoul Wonjuk
 Busan  		0	108	INF	INF		INF	INF	106	110	INF	INF	
 Daegu		108	0	152	INF		211	INF	135	87	INF	219
 Daejeon		INF	152	0	INF		INF  	86	INF  	INF	161	INF

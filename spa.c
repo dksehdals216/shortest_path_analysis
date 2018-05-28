@@ -11,27 +11,96 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 
 
 #define MAX_STR_LEN 256
 
-typedef struct Node
+typedef struct Edge
 {
-    int name_index;
-    int weight;
-    struct Node *next;
-}Node;
+    int source;
+    int dest, weight;
 
-void append_node(Node** hd_ptr, char in_index);
+}Edge;
+
+typedef struct Graph
+{
+    int vert_n;
+    int edge_n;
+
+    struct Edge* edge;
+}Graph;
+
 char *replace_str(char *inp_str, char *target, char *new);
-void freeLL(Node *hd_ptr);
 
+struct Graph* createGraph(int V, int E)
+{
+    Graph* graph = malloc(sizeof(Graph));
+    graph->vert_n = V;
+    graph->edge_n = E;
+    graph->edge = malloc(sizeof(Edge[E]));
+    return graph;
+}
+
+void printArr(int dist[], int n)
+{
+    for(int i = 0; i < n; ++i)
+    {
+        printf("%d \t\t %d\n", i, dist[i]);
+    }
+}
+
+void BellmanFord(struct Graph* graph, int src)
+{
+    int V = graph->vert_n;
+    int E = graph->edge_n;
+    int dist[V];
+ 
+    // Step 1: Initialize distances from src to all other vertices
+    // as INFINITE
+    for (int i = 0; i < V; i++)
+        dist[i]   = INT_MAX;
+    dist[src] = 0;
+ 
+    // Step 2: Relax all edges |V| - 1 times. A simple shortest 
+    // path from src to any other vertex can have at-most |V| - 1 
+    // edges
+    for (int i = 1; i <= V-1; i++)
+    {
+        for (int j = 0; j < E; j++)
+        {
+            int u = graph->edge[j].source;
+            int v = graph->edge[j].dest;
+            int weight = graph->edge[j].weight;
+            if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
+                dist[v] = dist[u] + weight;
+        }
+    }
+ 
+    // Step 3: check for negative-weight cycles.  The above step 
+    // guarantees shortest distances if graph doesn't contain 
+    // negative weight cycle.  If we get a shorter path, then there
+    // is a cycle.
+    for (int i = 0; i < E; i++)
+    {
+        int u = graph->edge[i].source;
+        int v = graph->edge[i].dest;
+        int weight = graph->edge[i].weight;
+        if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
+            printf("Graph contains negative weight cycle");
+    }
+ 
+    printArr(dist, V);
+ 
+    return;
+}
 
 int main(int argc, char* argv[])
 {
 	FILE * fp;
 	char *buffer;
     char *replc_str = NULL;
+
 	int f_size = 0;
 	int counter = 0;
 	int c;
@@ -63,9 +132,9 @@ int main(int argc, char* argv[])
 
     while ((c = fgetc(fp)) != EOF)
     {       
+        buffer[n++] = c;
         if( c != '\t' && c != ' ' && c != '\n' && c != '\r')
         {
-            buffer[n++] = c;
             if(!isalpha(c))
             {
             	counter++;
@@ -87,6 +156,7 @@ int main(int argc, char* argv[])
         memset(name[n], '\0', sizeof(name[n]));
     }
 
+    //print location string
     n = 0;
     while(1)
     { 
@@ -97,7 +167,6 @@ int main(int argc, char* argv[])
         }
         n++;       
     }
-    printf("%s\n\n", buffer);
 
     c = 0;
     int k = 0;
@@ -111,22 +180,59 @@ int main(int argc, char* argv[])
         }
     }
 
-    Node *llist_arr[counter];
-
-    for(n = 0; n < counter; n++)
+    //name tags for cities
+    for(n = 0; n < c; n++)
     {
-       llist_arr[n] = (Node*)malloc(sizeof(Node));
-
-       llist_arr[n]->name_index = n;
+        //printf("%s\n", name[n]);
     }
 
+    long (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
+    char delim[] = "\t\r\n\v\f";
+    n = 0;
+    k = 0;
+
+    while(*replc_str)
+    {
+        if(isdigit(*replc_str))
+        {
+            long val = strtol(replc_str, &replc_str, 10);
+            adj_matrix[n][k] = val;
+            k++;
+        }
+        else
+        {
+            replc_str++;
+        }
+        if(k > 9)
+        {
+            k = 0;
+            n++;
+        }
+    }
+
+
     for(n = 0; n < counter; n++)
     {
-        freeLL(llist_arr[n]);
+        for(k = 0; k < counter; k++)
+        {
+            printf("%ld ", adj_matrix[n][k]);
+        }
+            printf("\n");
+    }
+
+
+    Graph *llist_arr[counter];
+
+
+    for(n = 0; n < counter; n++)
+    {
+        //freeLL(llist_arr[n]);
     }
 
  	free(buffer);
-    free(replc_str);
+    //free(replc_str);
+    free(adj_matrix);
+
 }
 
 char *replace_str(char *inp_str, char *target, char *new)
@@ -166,10 +272,10 @@ char *replace_str(char *inp_str, char *target, char *new)
     return out_str;
 
 }
-
-void freeLL(Node *hd_ptr)
+/*
+void freeLL(Graph *hd_ptr)
 {
-    Node* tmp;
+    Graph* tmp;
     while(hd_ptr != NULL)
     {
         tmp = hd_ptr;
@@ -178,10 +284,10 @@ void freeLL(Node *hd_ptr)
     }
 }
 
-void append_node(Node** hd_ptr, char in_index)
+void append_Graph(Graph** hd_ptr, char in_index)
 {
-    Node* new = (Node*)malloc(sizeof(Node));
-    Node* last = *hd_ptr;
+    Graph* new = (Graph*)malloc(sizeof(Graph));
+    Graph* last = *hd_ptr;
 
     new->name_index = in_index;
     new->next = NULL;
@@ -200,3 +306,4 @@ void append_node(Node** hd_ptr, char in_index)
     }
     last->next = new;
 }
+*/
