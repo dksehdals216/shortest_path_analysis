@@ -32,6 +32,7 @@ typedef struct Graph
 }Graph;
 
 char *replace_str(char *inp_str, char *target, char *new);
+char *replace_test(char *inp_str, char *target, char *replace);
 
 struct Graph* createGraph(int V, int E)
 {
@@ -87,10 +88,12 @@ void BellmanFord(struct Graph* graph, int src)
         int v = graph->edge[i].dest;
         int weight = graph->edge[i].weight;
         if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
-            printf("Graph contains negative weight cycle");
+        {
+            printf("Graph contains negative weight cycle"); 
+            printArr(dist, V);
+        }
     }
  
-    printArr(dist, V);
  
     return;
 }
@@ -144,10 +147,13 @@ int main(int argc, char* argv[])
 
 
     char ch[] = "INF";
-    char t[] = "-1";
+    char t[] = "9999";
 	counter = sqrt(counter);
+    printf("\n%s\n", buffer);
 
-    replc_str = replace_str(buffer, ch, t);
+    //replc_str = replace_str(buffer, ch, t);
+    replc_str = replace_test(buffer, ch, t);
+
     printf("\n%s\n", replc_str);
 
     char name[counter][MAX_STR_LEN];
@@ -187,10 +193,10 @@ int main(int argc, char* argv[])
     }
 
     long (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
-    char delim[] = "\t\r\n\v\f";
+    //char delim[] = "\t\r\n\v\f";
     n = 0;
     k = 0;
-
+/*
     while(*replc_str)
     {
         if(isdigit(*replc_str))
@@ -209,6 +215,7 @@ int main(int argc, char* argv[])
             n++;
         }
     }
+    */
 
 
     for(n = 0; n < counter; n++)
@@ -221,7 +228,7 @@ int main(int argc, char* argv[])
     }
 
 
-    Graph *llist_arr[counter];
+    //Graph *llist_arr[counter];
 
 
     for(n = 0; n < counter; n++)
@@ -235,13 +242,30 @@ int main(int argc, char* argv[])
 
 }
 
+char *replace_test(char *inp_str, char *target, char *replace)
+{
+    char *dest = malloc (strlen(inp_str)-strlen(target)+strlen(replace)+1);
+    char *ptr;
+
+    strcpy (dest, inp_str);
+
+    ptr = strstr (dest, target);
+    if (ptr)
+    {
+        memmove (ptr+strlen(replace), ptr+strlen(target), strlen(ptr+strlen(target))+1);
+        strncpy (ptr, replace, strlen(replace));
+    }
+
+    return dest;
+}
+
 char *replace_str(char *inp_str, char *target, char *new)
 {
 	int i = 0;
 	int cnt = 0;
 	int tok_rep = strlen(new);
 	int tok_len = strlen(target);
-    char *out_str;
+    char *out_str = NULL;
     
     for(i = 0; inp_str[i] != '\0'; i++)
     {
