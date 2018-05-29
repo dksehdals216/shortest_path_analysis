@@ -16,6 +16,7 @@
 
 #define MAX_STR_LEN 256
 
+
 typedef struct Edge
 {
     int source;
@@ -31,9 +32,6 @@ typedef struct Graph
     struct Edge* edge;
 }Graph;
 
-char *replace_str(char *inp_str, char *target, char *new);
-char *replace_test(char *inp_str, char *target, char *replace);
-
 struct Graph* createGraph(int V, int E)
 {
     Graph* graph = malloc(sizeof(Graph));
@@ -41,6 +39,169 @@ struct Graph* createGraph(int V, int E)
     graph->edge_n = E;
     graph->edge = malloc(sizeof(Edge[E]));
     return graph;
+}
+
+void printArr(int dist[], int n);
+void BellmanFord(struct Graph* graph, int src);
+
+int main(int argc, char* argv[])
+{
+	FILE * fp;
+	char *buffer;
+    char *replc_str = NULL;
+
+	int f_size = 0;
+	int counter = 0;
+	int c;
+	int n = 0;
+    int k = 0;
+
+
+    if (argc != 2)
+    {
+        printf ("Usage: ./scc filename\n");
+        return -1;
+    }
+
+    fp = fopen (argv[1], "r");
+    if (fp == NULL)
+    {
+        printf("failed to open file");
+        return 0;
+    }
+
+    fseek (fp, 0L, SEEK_END);
+    f_size = ftell(fp);
+    fseek (fp, 0L, SEEK_SET); //or use rewind(fp);
+
+
+    buffer = (char *) malloc(f_size);
+	if (!buffer)
+	{
+		printf("Failed to allocate buffer!!\n");
+	}
+
+    while ((c = fgetc(fp)) != EOF)
+    {       
+        buffer[n++] = c;
+        if( c != '\t' && c != ' ' && c != '\n' && c != '\r')
+        {
+            if(!isalpha(c))
+            {
+            	counter++;
+            }
+        }
+    }
+
+
+	counter = sqrt(counter);
+    printf("\n%s\n", buffer);
+
+    printf("\n%s\n", buffer);
+
+    n = 0;
+    k = 0;
+    c = 0;
+    int temp = 0;
+    int (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
+
+    while(n < strlen(buffer))
+    {
+        if ((n < strlen(buffer) - 4) && (buffer[n] == 'I') && (buffer[n+1] == 'N') && (buffer[n+2] == 'F'))
+        {
+            adj_matrix[c][k] = 9999;
+            n+=3;
+            k++;
+        }
+        else if (isdigit(buffer[n]))
+        {
+            temp = 0;
+            while(isdigit(buffer[n+temp]))
+            {
+                adj_matrix[c][k] = adj_matrix[c][k] * 10 + (buffer[n+temp] - '0');
+                temp++;
+            }
+            if(temp > 1)
+            {
+                n+=temp;
+                k++;
+            }
+            else
+            {
+                adj_matrix[c][k] = buffer[n] - '0';
+                k++;
+                n++;
+            }
+        }
+        else
+        {
+            n++;
+        }
+        
+        if(k > 9)
+        {
+            k = 0;
+            c++;
+        }
+    }
+
+    for(n = 0; n < counter; n++)
+    {
+        for(k = 0; k < counter; k++)
+        {
+            printf("%d ", adj_matrix[n][k]);
+        }
+            printf("\n");
+    }
+
+    char name[counter][MAX_STR_LEN];
+    for(n = 0; n < counter; n++)
+    {
+        memset(name[n], '\0', sizeof(name[n]));
+    }
+
+    //print location string
+    n = 0;
+    while(1)
+    { 
+        if(isdigit(buffer[n]))
+        {
+           buffer[n] = '\0'; 
+           break;
+        }
+        n++;       
+    }
+
+    c = 0;
+    k = 0;
+    for(n = 1; n < strlen(buffer); n++)
+    {
+        if(isupper(buffer[n]))
+        {
+            strncpy(name[c], buffer + k, n - k);
+            k = n;
+            c++;
+        }
+    }
+
+    //name tags for cities
+    for(n = 0; n < c; n++)
+    {
+        //printf("%s\n", name[n]);
+    }
+
+    for(n = 0; n < counter; n++)
+    {
+        for(k = 0; k < counter; k++)
+        {
+            printf("%ld ", adj_matrix[n][k]);
+        }
+            printf("\n");
+    }
+
+ 	free(buffer);
+    free(adj_matrix);
+
 }
 
 void printArr(int dist[], int n)
@@ -88,246 +249,12 @@ void BellmanFord(struct Graph* graph, int src)
         int v = graph->edge[i].dest;
         int weight = graph->edge[i].weight;
         if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
-        {
-            printf("Graph contains negative weight cycle"); 
-            printArr(dist, V);
-        }
+            printf("Graph contains negative weight cycle");
     }
  
+    printArr(dist, V);
  
     return;
 }
 
-int main(int argc, char* argv[])
-{
-	FILE * fp;
-	char *buffer;
-    char *replc_str = NULL;
 
-	int f_size = 0;
-	int counter = 0;
-	int c;
-	int n = 0;
-
-    if (argc != 2)
-    {
-        printf ("Usage: ./scc filename\n");
-        return -1;
-    }
-
-    fp = fopen (argv[1], "r");
-    if (fp == NULL)
-    {
-        printf("failed to open file");
-        return 0;
-    }
-
-    fseek (fp, 0L, SEEK_END);
-    f_size = ftell(fp);
-    fseek (fp, 0L, SEEK_SET); //or use rewind(fp);
-
-
-    buffer = (char *) malloc(f_size);
-	if (!buffer)
-	{
-		printf("Failed to allocate buffer!!\n");
-	}
-
-    while ((c = fgetc(fp)) != EOF)
-    {       
-        buffer[n++] = c;
-        if( c != '\t' && c != ' ' && c != '\n' && c != '\r')
-        {
-            if(!isalpha(c))
-            {
-            	counter++;
-            }
-        }
-    }
-
-
-    char ch[] = "INF";
-    char t[] = "9999";
-	counter = sqrt(counter);
-    printf("\n%s\n", buffer);
-
-    //replc_str = replace_str(buffer, ch, t);
-    replc_str = replace_test(buffer, ch, t);
-
-    printf("\n%s\n", replc_str);
-
-    char name[counter][MAX_STR_LEN];
-    for(n = 0; n < counter; n++)
-    {
-        memset(name[n], '\0', sizeof(name[n]));
-    }
-
-    //print location string
-    n = 0;
-    while(1)
-    { 
-        if(isdigit(buffer[n]))
-        {
-           buffer[n] = '\0'; 
-           break;
-        }
-        n++;       
-    }
-
-    c = 0;
-    int k = 0;
-    for(n = 1; n < strlen(buffer); n++)
-    {
-        if(isupper(buffer[n]))
-        {
-            strncpy(name[c], buffer + k, n - k);
-            k = n;
-            c++;
-        }
-    }
-
-    //name tags for cities
-    for(n = 0; n < c; n++)
-    {
-        //printf("%s\n", name[n]);
-    }
-
-    long (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
-    //char delim[] = "\t\r\n\v\f";
-    n = 0;
-    k = 0;
-/*
-    while(*replc_str)
-    {
-        if(isdigit(*replc_str))
-        {
-            long val = strtol(replc_str, &replc_str, 10);
-            adj_matrix[n][k] = val;
-            k++;
-        }
-        else
-        {
-            replc_str++;
-        }
-        if(k > 9)
-        {
-            k = 0;
-            n++;
-        }
-    }
-    */
-
-
-    for(n = 0; n < counter; n++)
-    {
-        for(k = 0; k < counter; k++)
-        {
-            printf("%ld ", adj_matrix[n][k]);
-        }
-            printf("\n");
-    }
-
-
-    //Graph *llist_arr[counter];
-
-
-    for(n = 0; n < counter; n++)
-    {
-        //freeLL(llist_arr[n]);
-    }
-
- 	free(buffer);
-    //free(replc_str);
-    free(adj_matrix);
-
-}
-
-char *replace_test(char *inp_str, char *target, char *replace)
-{
-    char *dest = malloc (strlen(inp_str)-strlen(target)+strlen(replace)+1);
-    char *ptr;
-
-    strcpy (dest, inp_str);
-
-    ptr = strstr (dest, target);
-    if (ptr)
-    {
-        memmove (ptr+strlen(replace), ptr+strlen(target), strlen(ptr+strlen(target))+1);
-        strncpy (ptr, replace, strlen(replace));
-    }
-
-    return dest;
-}
-
-char *replace_str(char *inp_str, char *target, char *new)
-{
-	int i = 0;
-	int cnt = 0;
-	int tok_rep = strlen(new);
-	int tok_len = strlen(target);
-    char *out_str = NULL;
-    
-    for(i = 0; inp_str[i] != '\0'; i++)
-    {
-        if(strstr(&inp_str[i], target) == &inp_str[i])
-        {
-            cnt++;
-            i+= tok_len - 1;
-        }
-    }
-
-    out_str = (char *)malloc(i + cnt * (tok_rep - tok_len));
-
-    i = 0;
-    while(*inp_str)
-    {
-        if(strstr(inp_str, target) == inp_str)
-        {
-            strcpy(&out_str[i], new);
-            i += tok_rep;
-            inp_str += tok_len;
-        }
-        else
-        {
-            out_str[i++] = *inp_str++;
-        }
-    }
-    out_str[i] = '\0';
-    return out_str;
-
-}
-/*
-void freeLL(Graph *hd_ptr)
-{
-    Graph* tmp;
-    while(hd_ptr != NULL)
-    {
-        tmp = hd_ptr;
-        hd_ptr = hd_ptr->next;
-        free(tmp);
-    }
-}
-
-void append_Graph(Graph** hd_ptr, char in_index)
-{
-    Graph* new = (Graph*)malloc(sizeof(Graph));
-    Graph* last = *hd_ptr;
-
-    new->name_index = in_index;
-    new->next = NULL;
-
-    if(*hd_ptr == NULL)
-    {
-        *hd_ptr = new;
-        return;
-    }
-    else
-    {
-        while(last->next != NULL)
-        {
-            last = last->next;
-        }
-    }
-    last->next = new;
-}
-*/
