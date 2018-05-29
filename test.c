@@ -1,100 +1,87 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-char *changewords_1 (char *sentence, char *find, char *replace)
+void dijkstra(int G[MAX][MAX],int n,int startnode);
+ 
+int main()
 {
-    char *dest = malloc (strlen(sentence)-strlen(find)+strlen(replace)+1);
-    char *destptr = dest;
-
-    *dest = 0;
-
-    while (*sentence)
-    {
-        if (!strncmp (sentence, find, strlen(find)))
-        {
-            strcat (destptr, replace);
-            sentence += strlen(find);
-            destptr += strlen(replace);
-        } else
-        {
-            *destptr = *sentence;
-            destptr++;
-            sentence++;
-        }
-    }
-    *destptr = 0;
-    return dest;
-}
-
-char *changewords_2 (char *sentence, char *find, char *replace)
-{
-    char *dest = malloc (strlen(sentence)-strlen(find)+strlen(replace)+1);
-    char *destptr = dest;
-
-    *dest = 0;
-
-    while (*sentence)
-    {
-        if (!strncmp (sentence, find, strlen(find)) &&
-            (sentence[strlen(find)] == 0 || sentence[strlen(find)] == ' '))
-        {
-            strcat (destptr, replace);
-            sentence += strlen(find);
-            destptr += strlen(replace);
-        } else
-        {
-            while (*sentence && *sentence != ' ')
-            {
-                *destptr = *sentence;
-                destptr++;
-                sentence++;
-            }
-            while (*sentence == ' ')
-            {
-                *destptr = *sentence;
-                destptr++;
-                sentence++;
-            }
-        }
-    }
-    *destptr = 0;
-    return dest;
-}
-
-char *changewords_3 (char *sentence, char *find, char *replace)
-{
-    char *dest = malloc (strlen(sentence)-strlen(find)+strlen(replace)+1);
-    char *ptr;
-
-    strcpy (dest, sentence);
-
-    ptr = strstr (dest, find);
-    if (ptr)
-    {
-        memmove (ptr+strlen(replace), ptr+strlen(find), strlen(ptr+strlen(find))+1);
-        strncpy (ptr, replace, strlen(replace));
-    }
-
-    return dest;
-}
-
-
-int main (void)
-{
-    char *result;
-
-    result = changewords_1 ("Hello I'm Number One","Number","Index");
-    printf ("[%s]\n", result);
-    free (result);
-
-    result = changewords_2 ("Here Is The One     Onerous Number One ...","One","Four");
-    printf ("[%s]\n", result);
-    free (result);
-
-    result = changewords_3 ("Here Is Number One Again","One","Fourty-Five Hundred");
-    printf ("[%s]\n", result);
-    free (result);
-
+    int G[MAX][MAX],i,j,n,u;
+    printf("Enter no. of vertices:");
+    scanf("%d",&n);
+    printf("\nEnter the adjacency matrix:\n");
+    
+    for(i=0;i<n;i++)
+        for(j=0;j<n;j++)
+            scanf("%d",&G[i][j]);
+    
+    printf("\nEnter the starting node:");
+    scanf("%d",&u);
+    dijkstra(G,n,u);
+    
     return 0;
+}
+ 
+void dijkstra(int G[MAX][MAX],int n,int startnode)
+{
+ 
+    int cost[MAX][MAX],distance[MAX],pred[MAX];
+    int visited[MAX],count,mindistance,nextnode,i,j;
+    
+    //pred[] stores the predecessor of each node
+    //count gives the number of nodes seen so far
+    //create the cost matrix
+    for(i=0;i<n;i++)
+        for(j=0;j<n;j++)
+            if(G[i][j]==0)
+                cost[i][j]=INFINITY;
+            else
+                cost[i][j]=G[i][j];
+    
+    //initialize pred[],distance[] and visited[]
+    for(i=0;i<n;i++)
+    {
+        distance[i]=cost[startnode][i];
+        pred[i]=startnode;
+        visited[i]=0;
+    }
+    
+    distance[startnode]=0;
+    visited[startnode]=1;
+    count=1;
+    
+    while(count<n-1)
+    {
+        mindistance=INFINITY;
+        
+        //nextnode gives the node at minimum distance
+        for(i=0;i<n;i++)
+            if(distance[i]<mindistance&&!visited[i])
+            {
+                mindistance=distance[i];
+                nextnode=i;
+            }
+            
+            //check if a better path exists through nextnode            
+            visited[nextnode]=1;
+            for(i=0;i<n;i++)
+                if(!visited[i])
+                    if(mindistance+cost[nextnode][i]<distance[i])
+                    {
+                        distance[i]=mindistance+cost[nextnode][i];
+                        pred[i]=nextnode;
+                    }
+        count++;
+    }
+ 
+    //print the path and distance of each node
+    for(i=0;i<n;i++)
+        if(i!=startnode)
+        {
+            printf("\nDistance of node%d=%d",i,distance[i]);
+            printf("\nPath=%d",i);
+            
+            j=i;
+            do
+            {
+                j=pred[j];
+                printf("<-%d",j);
+            }while(j!=startnode);
+    }
 }

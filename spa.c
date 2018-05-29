@@ -11,11 +11,10 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
-#include <limits.h>
 
 
 #define MAX_STR_LEN 256
-
+#define MAX_LIMIT 9999
 
 typedef struct Edge
 {
@@ -32,17 +31,11 @@ typedef struct Graph
     struct Edge* edge;
 }Graph;
 
-struct Graph* createGraph(int V, int E)
-{
-    Graph* graph = malloc(sizeof(Graph));
-    graph->vert_n = V;
-    graph->edge_n = E;
-    graph->edge = malloc(sizeof(Edge[E]));
-    return graph;
-}
 
-void printArr(int dist[], int n);
-void BellmanFord(struct Graph* graph, int src);
+struct Graph* createGraph(int V, int E);
+void BellmanFord(struct Graph* graph, int source);
+void out_res(int dist[], int n);
+void print_name(int counter, char name[][MAX_STR_LEN]);
 
 int main(int argc, char* argv[])
 {
@@ -54,7 +47,9 @@ int main(int argc, char* argv[])
 	int counter = 0;
 	int c;
 	int n = 0;
-    int k = 0;
+    int k = 0; 
+    int temp = 0;
+    int edge_n = 0;
 
 
     if (argc != 2)
@@ -95,27 +90,25 @@ int main(int argc, char* argv[])
 
 
 	counter = sqrt(counter);
-    printf("\n%s\n", buffer);
-
-    printf("\n%s\n", buffer);
+    //printf("\n%s\n", buffer);
 
     n = 0;
     k = 0;
     c = 0;
-    int temp = 0;
     int (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
 
     while(n < strlen(buffer))
     {
         if ((n < strlen(buffer) - 4) && (buffer[n] == 'I') && (buffer[n+1] == 'N') && (buffer[n+2] == 'F'))
         {
-            adj_matrix[c][k] = 9999;
+            adj_matrix[c][k] = MAX_LIMIT;
             n+=3;
             k++;
         }
         else if (isdigit(buffer[n]))
         {
             temp = 0;
+            edge_n++;
             while(isdigit(buffer[n+temp]))
             {
                 adj_matrix[c][k] = adj_matrix[c][k] * 10 + (buffer[n+temp] - '0');
@@ -145,6 +138,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    /*
     for(n = 0; n < counter; n++)
     {
         for(k = 0; k < counter; k++)
@@ -153,6 +147,7 @@ int main(int argc, char* argv[])
         }
             printf("\n");
     }
+    */
 
     char name[counter][MAX_STR_LEN];
     for(n = 0; n < counter; n++)
@@ -183,78 +178,123 @@ int main(int argc, char* argv[])
             c++;
         }
     }
+    
+    //calculate edge:
+    edge_n -= counter;
+    edge_n /= 2;
 
-    //name tags for cities
-    for(n = 0; n < c; n++)
-    {
-        //printf("%s\n", name[n]);
-    }
+    //printf("Edgen: %d\n", edge_n);
 
-    for(n = 0; n < counter; n++)
-    {
+    Graph* graph = createGraph(counter, edge_n);
+    //print_name(counter, name);
+
+
+    c = 0;
+    temp = 0;
+   /* 
+    for(temp = 0; temp < counter; temp++)
+    {*/
         for(k = 0; k < counter; k++)
         {
-            printf("%ld ", adj_matrix[n][k]);
+            for(n = 0; n < counter; n++)
+            {
+                if(adj_matrix[k][n] < 9999)
+                {
+                    //printf("source: %d dest: %d weight: %d\n", k, n, adj_matrix[k][n]);
+                    graph->edge[c].source = k;
+                    graph->edge[c].dest = n;
+                    graph->edge[c].weight = adj_matrix[k][n];
+
+                    c++;
+                }
+            }
         }
-            printf("\n");
-    }
+
+        BellmanFord(graph, temp);
+    //}
+    
+
 
  	free(buffer);
     free(adj_matrix);
 
 }
 
-void printArr(int dist[], int n)
+struct Graph* createGraph(int V, int E)
 {
-    for(int i = 0; i < n; ++i)
-    {
-        printf("%d \t\t %d\n", i, dist[i]);
-    }
+    Graph* graph = (Graph*)malloc(sizeof(Graph));
+    graph->vert_n = V;
+    graph->edge_n = E;
+    graph->edge = (Edge*)malloc(graph->edge_n * sizeof(Edge));
+    return graph;
 }
 
-void BellmanFord(struct Graph* graph, int src)
+void BellmanFord(struct Graph* graph, int source)
 {
     int V = graph->vert_n;
     int E = graph->edge_n;
-    int dist[V];
- 
-    // Step 1: Initialize distances from src to all other vertices
-    // as INFINITE
-    for (int i = 0; i < V; i++)
-        dist[i]   = INT_MAX;
-    dist[src] = 0;
- 
-    // Step 2: Relax all edges |V| - 1 times. A simple shortest 
-    // path from src to any other vertex can have at-most |V| - 1 
-    // edges
-    for (int i = 1; i <= V-1; i++)
+    int dist_src[V];
+    int past_[V];
+    int i, j, u, v, weight;
+
+    //init single source 
+    for(i = 0; i < V; i++)
     {
-        for (int j = 0; j < E; j++)
+        dist_src[i] = MAX_LIMIT;
+        past_[i] = 0;
+    }
+    dist_src[source] = 0;
+
+    //relax
+    for(i = 0; i < V-1; i++)
+    {
+        for(j = 0; j < E; j++)
         {
-            int u = graph->edge[j].source;
-            int v = graph->edge[j].dest;
-            int weight = graph->edge[j].weight;
-            if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
-                dist[v] = dist[u] + weight;
+            u = graph->edge[j].source;
+            v = graph->edge[j].dest;
+            weight = graph->edge[j].weight;
+
+            if ((dist_src[u] != MAX_LIMIT) && (dist_src[u] + weight < dist_src[v]))
+            {
+                dist_src[v] = dist_src[u] + weight;
+                past_[v] = u;
+            }
         }
     }
- 
-    // Step 3: check for negative-weight cycles.  The above step 
-    // guarantees shortest distances if graph doesn't contain 
-    // negative weight cycle.  If we get a shorter path, then there
-    // is a cycle.
-    for (int i = 0; i < E; i++)
+
+    //neg cycle check
+    for(i = 0; i < E; i++)
     {
-        int u = graph->edge[i].source;
-        int v = graph->edge[i].dest;
-        int weight = graph->edge[i].weight;
-        if (dist[u] != INT_MAX && dist[u] + weight < dist[v])
-            printf("Graph contains negative weight cycle");
+        u = graph->edge[i].source;
+        v = graph->edge[i].dest;
+        weight = graph->edge[j].weight;
+
+        if (dist_src[u] != MAX_LIMIT && dist_src[u] + weight < dist_src[v])
+        {
+            printf("neg cycle\n");
+        }
     }
+
+    out_res(dist_src, V);
+}
  
-    printArr(dist, V);
+void out_res(int dist[], int n)
+{
+    int i;
  
-    return;
+    for (i = 0; i < n; ++i){
+        printf("%d  ", dist[i]);
+    }
+    printf("\n");
 }
 
+void print_name(int counter, char name[][MAX_STR_LEN])
+{
+    int i;
 
+    for(i = 0; i < counter; i++)
+    {
+        printf("%s", name[i]);
+    }
+    printf("\n");
+}
