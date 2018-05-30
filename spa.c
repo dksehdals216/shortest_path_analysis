@@ -31,10 +31,91 @@ typedef struct Graph
     struct Edge* edge;
 }Graph;
 
+void dijkstra(int counter, int (*graph)[counter], int n, int start_n)
+{
+ 
+    int cost[counter][counter];
+    int dist[counter];
+    int pred[counter];
+    int vis[counter];
+    int count;
+    int min_dist;
+    int next_n;
+    int i,j;
+    
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            if(graph[i][j] == 0)
+            {
+                cost[i][j] = MAX_LIMIT;
+            }
+            else
+            {
+                cost[i][j] = graph[i][j];
+            }
+        }
+    }
+    //initialize pred[],distance[] and visited[]
+    for(i = 0; i < n; i++)
+    {
+        dist[i] = cost[start_n][i];
+        pred[i] = start_n;
+        vis[i] = 0;
+    }
+    
+    dist[start_n] = 0;
+    vis[start_n] = 1;
+    count = 1;
+    
+    while(count < n-1)
+    {
+        min_dist = MAX_LIMIT;
+        
+        //check next node for min dist
+        for(i = 0; i < n; i++)
+        {
+            if(dist[i] < min_dist &&! vis[i])
+            {
+                min_dist = dist[i];
+                next_n = i;
+            }
+        }
+
+        //Does Past exist?            
+        vis[next_n] = 1;
+        for(i = 0; i < n; i++)
+        {
+            if(!vis[i])
+                if(min_dist + cost[next_n][i] < dist[i])
+                {
+                    dist[i] = min_dist + cost[next_n][i];
+                    pred[i] = next_n;
+                }
+        }
+        count++;
+    }
+ 
+    //print the path and distance of each node
+    for(i = 0; i < n; i++)
+    {
+        if(i != start_n)
+        {
+            printf("%d  ", dist[i]);
+        }
+        else if(i == start_n)
+        {
+            printf("0  ");
+        }
+    }
+    printf("\n");
+}
+
 
 struct Graph* createGraph(int V, int E);
 void BellmanFord(struct Graph* graph, int source);
-void dijkstra(int** G, int n, int startnode, int counter);
+//void dijkstra(int (*G)[counter], int n, int startnode, int counter);
 void out_res(int dist[], int n);
 void print_name(int counter, char name[][MAX_STR_LEN]);
 
@@ -51,6 +132,8 @@ int main(int argc, char* argv[])
     int k = 0; 
     int temp = 0;
     int edge_n = 0;
+
+    int bufferlen = 0;
 
 
     if (argc != 2)
@@ -88,6 +171,7 @@ int main(int argc, char* argv[])
             }
         }
     }
+    buffer[n++] = '\0';
 
 
 	counter = sqrt(counter);
@@ -98,9 +182,10 @@ int main(int argc, char* argv[])
     c = 0;
     int (*adj_matrix)[counter] = malloc(sizeof * adj_matrix * counter);
 
-    while(n < strlen(buffer))
+    bufferlen = strlen(buffer);
+    while(n < bufferlen)
     {
-        if ((n < strlen(buffer) - 4) && (buffer[n] == 'I') && (buffer[n+1] == 'N') && (buffer[n+2] == 'F'))
+        if ((n < bufferlen - 4) && (buffer[n] == 'I') && (buffer[n+1] == 'N') && (buffer[n+2] == 'F'))
         {
             adj_matrix[c][k] = MAX_LIMIT;
             n+=3;
@@ -138,7 +223,7 @@ int main(int argc, char* argv[])
             c++;
         }
     }
-
+/*
     for(n = 0; n < counter; n++)
     {
         for(k = 0; k < counter; k++)
@@ -149,6 +234,7 @@ int main(int argc, char* argv[])
     }
 
     printf("\n\n\n");
+*/
     char name[counter][MAX_STR_LEN];
     for(n = 0; n < counter; n++)
     {
@@ -169,7 +255,8 @@ int main(int argc, char* argv[])
 
     c = 0;
     k = 0;
-    for(n = 1; n < strlen(buffer); n++)
+    bufferlen = strlen(buffer);
+    for(n = 1; n < bufferlen; n++)
     {
         if(isupper(buffer[n]))
         {
@@ -192,6 +279,8 @@ int main(int argc, char* argv[])
     c = 0;
     temp = 0;
     
+    //bellman ford out
+    printf("Bellman Ford output: \n");
     for(temp = 0; temp < counter; temp++)
     {
         for(k = 0; k < counter; k++)
@@ -213,6 +302,12 @@ int main(int argc, char* argv[])
         BellmanFord(graph, temp);
     }
     
+    //dijkstra out
+    printf("\n\nDijkstra output: \n");
+    for(temp = 0; temp < counter; temp++)
+    {
+        dijkstra(counter, adj_matrix, counter, temp);
+    }
 
 
  	free(buffer);
@@ -299,71 +394,3 @@ void print_name(int counter, char name[][MAX_STR_LEN])
     printf("\n");
 }
 
-
-void dijkstra(int** G, int n, int startnode, int counter)
-{
- 
-    int cost[counter][counter],distance[counter],pred[counter];
-    int visited[counter],count,mindistance,nextnode,i,j;
-    
-    //pred[] stores the predecessor of each node
-    //count gives the number of nodes seen so far
-    //create the cost matrix
-    for(i=0;i<n;i++)
-        for(j=0;j<n;j++)
-            if(G[i][j]==0)
-                cost[i][j]=MAX_LIMIT;
-            else
-                cost[i][j]=G[i][j];
-    
-    //initialize pred[],distance[] and visited[]
-    for(i=0;i<n;i++)
-    {
-        distance[i]=cost[startnode][i];
-        pred[i]=startnode;
-        visited[i]=0;
-    }
-    
-    distance[startnode]=0;
-    visited[startnode]=1;
-    count=1;
-    
-    while(count<n-1)
-    {
-        mindistance=MAX_LIMIT;
-        
-        //nextnode gives the node at minimum distance
-        for(i=0;i<n;i++)
-            if(distance[i]<mindistance&&!visited[i])
-            {
-                mindistance=distance[i];
-                nextnode=i;
-            }
-            
-            //check if a better path exists through nextnode            
-            visited[nextnode]=1;
-            for(i=0;i<n;i++)
-                if(!visited[i])
-                    if(mindistance+cost[nextnode][i]<distance[i])
-                    {
-                        distance[i]=mindistance+cost[nextnode][i];
-                        pred[i]=nextnode;
-                    }
-        count++;
-    }
- 
-    //print the path and distance of each node
-    for(i=0;i<n;i++)
-        if(i!=startnode)
-        {
-            printf("\nDistance of node%d=%d",i,distance[i]);
-            printf("\nPath=%d",i);
-            
-            j=i;
-            do
-            {
-                j=pred[j];
-                printf("<-%d",j);
-            }while(j!=startnode);
-    }
-}
