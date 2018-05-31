@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <sys/time.h>
 
 
 #define MAX_STR_LEN 256
@@ -112,10 +113,53 @@ void dijkstra(int counter, int (*graph)[counter], int n, int start_n)
     printf("\n");
 }
 
+void floyd(int counter, int (*graph)[counter])
+{
+    int dist[counter][counter];
+    int i, j, k;
+
+    for(i = 0; i < counter; i++)
+    {
+        for(j = 0; j < counter; j++)
+        {
+            dist[i][j] = graph[i][j];
+        }
+    }
+
+    for(k = 0; k < counter; k++)
+    {
+        for(i = 0; i < counter; i++)
+        {
+            for(j = 0; j < counter; j++)
+            {
+                if(dist[i][k] + dist[k][j] < dist[i][j])
+                {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                }
+            }
+        }
+    }
+
+    printf("\n\nFloyd Warshall Output: \n");
+    for(i = 0; i < counter; i++)
+    {
+        for(j = 0; j < counter; j++)
+        {
+            if(dist[i][j] == MAX_LIMIT)
+            {
+                printf("%d ", MAX_LIMIT);
+            }
+            else
+            {
+                printf("%d ", dist[i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
 
 struct Graph* createGraph(int V, int E);
 void BellmanFord(struct Graph* graph, int source);
-//void dijkstra(int (*G)[counter], int n, int startnode, int counter);
 void out_res(int dist[], int n);
 void print_name(int counter, char name[][MAX_STR_LEN]);
 
@@ -134,6 +178,8 @@ int main(int argc, char* argv[])
     int edge_n = 0;
 
     int bufferlen = 0;
+    struct timeval t1, t2;
+    double elapsedT;
 
 
     if (argc != 2)
@@ -223,18 +269,7 @@ int main(int argc, char* argv[])
             c++;
         }
     }
-/*
-    for(n = 0; n < counter; n++)
-    {
-        for(k = 0; k < counter; k++)
-        {
-            printf("%d ", adj_matrix[n][k]);
-        }
-            printf("\n");
-    }
 
-    printf("\n\n\n");
-*/
     char name[counter][MAX_STR_LEN];
     for(n = 0; n < counter; n++)
     {
@@ -281,6 +316,7 @@ int main(int argc, char* argv[])
     
     //bellman ford out
     printf("Bellman Ford output: \n");
+    gettimeofday(&t1, NULL);
     for(temp = 0; temp < counter; temp++)
     {
         for(k = 0; k < counter; k++)
@@ -301,13 +337,30 @@ int main(int argc, char* argv[])
 
         BellmanFord(graph, temp);
     }
+    gettimeofday(&t2, NULL);
+    elapsedT = (t2.tv_sec - t1.tv_sec) * 1000.0;
+    elapsedT += (t2.tv_usec - t1.tv_usec) / 1000.0;
+    printf("elapsed time: %lf microseconds\n", elapsedT);
     
     //dijkstra out
+    gettimeofday(&t1, NULL);
     printf("\n\nDijkstra output: \n");
     for(temp = 0; temp < counter; temp++)
     {
         dijkstra(counter, adj_matrix, counter, temp);
     }
+    gettimeofday(&t2, NULL);
+    elapsedT = (t2.tv_sec - t1.tv_sec) * 1000.0;
+    elapsedT += (t2.tv_usec - t1.tv_usec) / 1000.0;
+    printf("elapsed time: %lf microseconds\n", elapsedT);
+
+    //floyd out
+    gettimeofday(&t1, NULL);
+    floyd(counter, adj_matrix);
+    gettimeofday(&t2, NULL);
+    elapsedT = (t2.tv_sec - t1.tv_sec) * 1000.0;
+    elapsedT += (t2.tv_usec - t1.tv_usec) / 1000.0;
+    printf("elapsed time: %lf microseconds\n", elapsedT);
 
 
  	free(buffer);
