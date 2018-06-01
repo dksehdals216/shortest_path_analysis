@@ -159,9 +159,10 @@ void floyd(int counter, int (*graph)[counter])
 }
 
 struct Graph* createGraph(int V, int E);
-void BellmanFord(struct Graph* graph, int source);
+void BellmanFord(struct Graph* g, int source);
 void out_res(int dist[], int n);
 void print_name(int counter, char name[][MAX_STR_LEN]);
+
 
 int main(int argc, char* argv[])
 {
@@ -181,14 +182,8 @@ int main(int argc, char* argv[])
     struct timeval t1, t2;
     double elapsedT;
 
-
-    if (argc != 2)
-    {
-        printf ("Usage: ./scc filename\n");
-        return -1;
-    }
-
-    fp = fopen (argv[1], "r");
+    
+    fp = fopen ("data.txt", "r");
     if (fp == NULL)
     {
         printf("failed to open file");
@@ -270,13 +265,8 @@ int main(int argc, char* argv[])
         }
     }
 
-    char name[counter][MAX_STR_LEN];
-    for(n = 0; n < counter; n++)
-    {
-        memset(name[n], '\0', sizeof(name[n]));
-    }
-
     //print location string
+
     n = 0;
     while(1)
     { 
@@ -288,53 +278,34 @@ int main(int argc, char* argv[])
         n++;       
     }
 
-    c = 0;
-    k = 0;
-    bufferlen = strlen(buffer);
-    for(n = 1; n < bufferlen; n++)
-    {
-        if(isupper(buffer[n]))
-        {
-            strncpy(name[c], buffer + k, n - k);
-            k = n;
-            c++;
-        }
-    }
-    
     //calculate edge:
     edge_n -= counter;
     edge_n /= 2;
 
-    //printf("Edgen: %d\n", edge_n);
-
     Graph* graph = createGraph(counter, edge_n);
-    //print_name(counter, name);
 
-
-    c = 0;
     temp = 0;
-    
+    c = 0;
+
     //bellman ford out
     printf("Bellman Ford output: \n");
     gettimeofday(&t1, NULL);
-    for(temp = 0; temp < counter; temp++)
+    for(k = 0; k < counter; k++)
     {
-        for(k = 0; k < counter; k++)
+        for(n = 0; n < counter; n++)
         {
-            for(n = 0; n < counter; n++)
+            if(adj_matrix[k][n] < MAX_LIMIT)
             {
-                if(adj_matrix[k][n] < MAX_LIMIT)
-                {
-                    //printf("source: %d dest: %d weight: %d\n", k, n, adj_matrix[k][n]);
-                    graph->edge[c].source = k;
-                    graph->edge[c].dest = n;
-                    graph->edge[c].weight = adj_matrix[k][n];
+                graph->edge[c].source = k;
+                graph->edge[c].dest = n;
+                graph->edge[c].weight = adj_matrix[k][n];
 
-                    c++;
-                }
+                c++;
             }
         }
-
+    }
+    for(temp = 0; temp < counter; temp++)
+    {
         BellmanFord(graph, temp);
     }
     gettimeofday(&t2, NULL);
@@ -365,6 +336,7 @@ int main(int argc, char* argv[])
 
  	free(buffer);
     free(adj_matrix);
+    free(graph);
 
 }
 
@@ -415,7 +387,7 @@ void BellmanFord(struct Graph* graph, int source)
     {
         u = graph->edge[i].source;
         v = graph->edge[i].dest;
-        weight = graph->edge[j].weight;
+        weight = graph->edge[i].weight;
 
         if (dist_src[u] != MAX_LIMIT && dist_src[u] + weight < dist_src[v])
         {
@@ -426,6 +398,7 @@ void BellmanFord(struct Graph* graph, int source)
     out_res(dist_src, V);
 }
  
+
 void out_res(int dist[], int n)
 {
     int i;

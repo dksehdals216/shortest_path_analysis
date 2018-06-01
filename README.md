@@ -27,6 +27,6 @@ $ ./spa data.txt
 ### System & Compiler
 
 Ubuntu 18.04
-MacOS HighSierra
+currently not working on MacOS HighSierra :(
 
 GCC 7.333.0 (Ubuntu 7.3.0-16ubuntu3) 
